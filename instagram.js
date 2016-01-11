@@ -4,7 +4,7 @@
         //redirectUri: 'http://localhost:8888/Examples/instagram/instagram.html',
         redirectUri: 'http://accesogroup.github.io/tableau-wdc/instagram.html',
         authUrl: 'https://api.instagram.com/',
-        count: 6
+        count: 33
     };
 
   $(document).ready(function() {
