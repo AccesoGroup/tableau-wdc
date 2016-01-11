@@ -1,10 +1,10 @@
 (function() {
   var config = {
         clientId: 'ba2c0ee93b8c4061971c244ce8c1b37b',
-        //redirectUri: 'http://localhost:8888/Examples/instagram/instagram.html',
-        redirectUri: 'http://accesogroup.github.io/tableau-wdc/instagram.html',
+        redirectUri: 'http://localhost:8888/Examples/instagram/instagram.html',
+        //redirectUri: 'http://accesogroup.github.io/tableau-wdc/instagram.html',
         authUrl: 'https://api.instagram.com/',
-        count: 33
+        count: 6
     };
 
   $(document).ready(function() {
@@ -100,27 +100,30 @@
   };
 
   myConnector.getTableData = function(lastRecordToken) {
+console.log("lastRecordToken: " + lastRecordToken);
       var lastRecordDate, lastRecordData = {};
       var dataToReturn = [];
-      var hasMoreData = false;
       var connectionData = tableau.connectionData ? JSON.parse(tableau.connectionData) : {};
 
       if(lastRecordToken) {
-          if($.isNumeric(lastRecordToken)) {
+          if(!isNaN(Date.parse(lastRecordToken))) {
               // Incremental call .. lastRecordToken is a date
               lastRecordDate = new Date(lastRecordToken);
-              lastRecordData.lastRecordDate = lastRecordDate;
+              lastRecordData.lastRecordDate = lastRecordDate.toISOString();
           } else {
               // More results call .. lastRecordToken is a JSON
               lastRecordData = JSON.parse(lastRecordToken);
-              lastRecordDate = lastRecordData.lastRecordDate;
+              if(lastRecordData.lastRecordDate) {
+                   lastRecordDate = new Date(lastRecordData.lastRecordDate);
+              }
           }
+console.log("lastRecordDate: " + (lastRecordDate ? lastRecordDate.toISOString() : 'undefined'));
       }
       var maxId = lastRecordData.maxId;
 
       var accessToken = tableau.password;
       var connectionUri = getRecentPostsURI(accessToken,maxId);
-
+console.log("ConnectionUri: " + connectionUri);
       var xhr = $.ajax({
           url: connectionUri,
           dataType: 'jsonp',
@@ -131,10 +134,14 @@
                   var ii;
                   var previousDataToReturnLength = dataToReturn.length;
                   for (ii = 0; ii < posts.length; ++ii) {
-                      if(!lastRecordDate || posts[ii].created_time > lastRecordDate) {
+                      var postCreatedDate = new Date(posts[ii].created_time * 1000);
+
+console.log("postCreatedDate: " + postCreatedDate.toISOString());
+
+                      if(!lastRecordDate || postCreatedDate > lastRecordDate) {
                             var post = {
                                    'id': posts[ii].id,
-                                   'created_time': posts[ii].created_time,
+                                   'created_time': postCreatedDate,
                                    'username': posts[ii].user.username,
                                    'caption': posts[ii].caption ? posts[ii].caption.text : "",
                                    'num_comments': posts[ii].comments.count,
@@ -143,13 +150,17 @@
                       }
                   }
 
+console.log("posts.length: " + posts.length);
+console.log("dataToReturn.length: " + dataToReturn.length);
+console.log("previousDataToReturnLength: " + previousDataToReturnLength);
+
                   var hasMore = (posts.length == (dataToReturn.length - previousDataToReturnLength)) // We added every posts
                                 && (data.pagination.next_max_id != null); // The server says that there are more posts waiting for us
                   if(hasMore) {
                        lastRecordData.maxId = data.pagination.next_max_id;
                   }
 
-                  tableau.dataCallback(dataToReturn, JSON.stringify(lastRecordData), hasMore);
+                  tableau.dataCallback(dataToReturn, JSON.stringify(lastRecordData), false /*hasMore*/);
               }
               else {
                   tableau.abortWithError("No results found");
