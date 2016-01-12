@@ -1,8 +1,8 @@
 (function() {
   var config = {
         clientId: 'ba2c0ee93b8c4061971c244ce8c1b37b',
-        redirectUri: 'http://localhost:8888/Examples/instagram/instagram.html',
-        //redirectUri: 'http://accesogroup.github.io/tableau-wdc/instagram.html',
+        //redirectUri: 'http://localhost:8888/Examples/instagram/instagram.html',
+        redirectUri: 'http://accesogroup.github.io/tableau-wdc/instagram.html',
         authUrl: 'https://api.instagram.com/',
         count: 33
     };
