@@ -94,8 +94,8 @@
   };
 
   myConnector.getColumnHeaders = function() {
-      var fieldNames = ["id","created_time", "username", "caption", "num_comments", "num_likes"];
-      var fieldTypes = ["string","datetime","string","string","int","int"];
+      var fieldNames = ["id","created_time", "username", "caption", "num_comments", "num_likes", "link", "profile_picture", "thumbnail", "type", "filter", "latitude", "longitude"];
+      var fieldTypes = ["string","datetime","string","string","int","int","string","string","string","string","string","string","string"];
       tableau.headersCallback(fieldNames, fieldTypes);
   };
 
@@ -145,7 +145,15 @@ console.log("postCreatedDate: " + postCreatedDate.toISOString());
                                    'username': posts[ii].user.username,
                                    'caption': posts[ii].caption ? posts[ii].caption.text : "",
                                    'num_comments': posts[ii].comments.count,
-                                   'num_likes': posts[ii].likes.count};
+                                   'num_likes': posts[ii].likes.count,
+                                   'link': posts[ii].link,
+                                   'profile_picture': posts[ii].user.profile_picture,
+                                   'thumbnail': posts[ii].images.thumbnail.url,
+                                   'type': posts[ii].type,
+                                   'filter': posts[ii].filter,
+                                   'latitude': posts[ii].location ? posts[ii].location.latitude : "",
+                                   'longitude': posts[ii].location ? posts[ii].location.longitude : ""
+                            };
                             dataToReturn.push(post);
                       }
                   }
