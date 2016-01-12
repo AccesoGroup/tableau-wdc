@@ -41,6 +41,36 @@
               '&count=' + config.count +
               '&max_id=' + (nextMaxId || '');
   }
+ 
+  function getUserInfoURI(accessToken) {
+      return "https://api.instagram.com/v1/users/self/?access_token=" +
+              accessToken; 
+  }
+
+  function getUserInfo(accessToken) {
+      var userInfo = {};
+      var connectionUri = getUserInfoURI(accessToken);
+      var xhr = $.ajax({
+          url: connectionUri,
+          dataType: 'jsonp',
+          jsonp: 'callback',
+          success: function (data) {
+              if(data.meta.code == 200) {
+                  userInfo.full_name = data.data.full_name;
+                  userInfo.user_id = data.data.id;
+                  userInfo.num_follows = data.data.counts.follows;
+                  userInfo.num_followed_by = data.data.counts.followed_by;
+              }
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+              // If the connection fails, log the error and return an empty set.
+              tableau.log("Connection error: " + xhr.responseText + "\n" +
+                           thrownError);
+              tableau.abortWithError("Error while trying to connect to Instagram.");
+          }
+      });
+      return userInfo;
+  }
 
   function parseAccessToken() {
       var query = window.location.hash.substring(1);
@@ -94,8 +124,8 @@
   };
 
   myConnector.getColumnHeaders = function() {
-      var fieldNames = ["id","created_time", "username", "caption", "num_comments", "num_likes", "link", "profile_picture", "thumbnail", "type", "filter", "latitude", "longitude"];
-      var fieldTypes = ["string","datetime","string","string","int","int","string","string","string","string","string","float","float"];
+      var fieldNames = ["id","created_time", "username", "caption", "num_comments", "num_likes", "link", "profile_picture", "thumbnail", "type", "filter", "latitude", "longitude", "full_name", "user_id", "num_follows", "num_followed_by"];
+      var fieldTypes = ["string","datetime","string","string","int","int","string","string","string","string","string","float","float","string","string","int","int"];
       tableau.headersCallback(fieldNames, fieldTypes);
   };
 
@@ -122,6 +152,7 @@ console.log("lastRecordDate: " + (lastRecordDate ? lastRecordDate.toISOString() 
       var maxId = lastRecordData.maxId;
 
       var accessToken = tableau.password;
+      var userInfo = getUserInfo(accessToken);
       var connectionUri = getRecentPostsURI(accessToken,maxId);
 console.log("ConnectionUri: " + connectionUri);
       var xhr = $.ajax({
@@ -152,7 +183,11 @@ console.log("postCreatedDate: " + postCreatedDate.toISOString());
                                    'type': posts[ii].type,
                                    'filter': posts[ii].filter,
                                    'latitude': posts[ii].location ? posts[ii].location.latitude : "",
-                                   'longitude': posts[ii].location ? posts[ii].location.longitude : ""
+                                   'longitude': posts[ii].location ? posts[ii].location.longitude : "",
+                                   'full_name': userInfo.full_name,
+                                   'user_id': userInfo.user_id,
+                                   'num_follows': userInfo.num_follows,
+                                   'num_followed_by': userInfo.num_followed_by
                             };
                             dataToReturn.push(post);
                       }
