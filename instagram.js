@@ -203,7 +203,7 @@ console.log("previousDataToReturnLength: " + previousDataToReturnLength);
                        lastRecordData.maxId = data.pagination.next_max_id;
                   }
 
-                  tableau.dataCallback(dataToReturn, JSON.stringify(lastRecordData), false /*hasMore*/);
+                  tableau.dataCallback(dataToReturn, JSON.stringify(lastRecordData), hasMore);
               }
               else {
                   tableau.abortWithError("No results found");
